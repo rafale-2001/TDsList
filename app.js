@@ -27,12 +27,7 @@ const defaultItems = [item1,item2, item3];
 
 
 
-
-
 app.get("/", function(req, res) {
-  
-  
-
   Item.find({}).then(foundItems=>{
     if(foundItems.length === 0){
       Item.insertMany(defaultItems)
@@ -56,6 +51,25 @@ app.post("/", function(req, res){
   item.save();
   res.redirect("/");
 });
+
+app.post("/delete",function(req,res){
+  // console.log(req.body);
+  const checkedItemId = req.body.checkbox;
+  // Item.deleteOne({_id:checkedItemId})
+  // .then(()=>{
+  //   console.log("deleted");
+  // }).catch((err)=>{
+  //   console.log(err);
+  // })
+
+  Item.findByIdAndDelete(checkedItemId)
+  .then(()=>{
+    console.log("deleted");
+  }).catch((err)=>{
+    console.log(err);
+  })
+  res.redirect("/");
+})
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
