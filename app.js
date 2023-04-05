@@ -1,8 +1,8 @@
 const express = require("express");
-const http = require("http");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 var url = require('url');
+const _ = require("lodash");
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -52,7 +52,7 @@ app.get("/", function(req, res) {
 
 app.get("/:customListName",function(req,res){
   // console.log(req.params.customListName);
-  const customListName = req.params.customListName;
+  const customListName = _.capitalize(req.params.customListName);
   
   List.findOne({name:customListName}).then(foundList=>{
     if(foundList){
@@ -95,24 +95,41 @@ app.post("/", function(req, res){
   // item.save();
   // res.redirect("/");
 });
-app.post("/delete",function(req,res){
-  // console.log(req.body);
+
+
+
+app.post("/delete", function(req, res) {
   const checkedItemId = req.body.checkbox;
+  const listName = req.body.listName;
+
+  if (listName === "Today") {
+    Item.findByIdAndDelete(checkedItemId)
+    .then(()=>{
+      console.log("deleted form today");
+      res.redirect("/");
+    })
+    .catch((err)=>{
+      console.log(err);
+    })
+  } 
+    else{
+      List.findOneAndUpdate({name:listName},{$pull :{items:{_id: checkedItemId}}}).then((foundList)=>{
+      res.redirect("/"+listName);
+      console.log("deleted");
+    }).catch((err)=>{
+      console.log(err);
+    })
+  }
+
+  //the below deleteOne can also be used 
   // Item.deleteOne({_id:checkedItemId})
   // .then(()=>{
   //   console.log("deleted");
   // }).catch((err)=>{
   //   console.log(err);
   // })
+});
 
-  Item.findByIdAndDelete(checkedItemId)
-  .then(()=>{
-    console.log("deleted");
-  }).catch((err)=>{
-    console.log(err);
-  })
-  res.redirect("/");
-})
 
 
 
